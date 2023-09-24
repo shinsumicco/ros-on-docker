@@ -3,6 +3,23 @@ FROM nvidia/opengl:1.2-glvnd-devel-ubuntu20.04
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEBCONF_NOWARNINGS yes
 
+# add new sudo user
+ENV CONTAINER_USER user
+ENV CONTAINER_HOME /home/${CONTAINER_USER}
+ARG CONTAINER_UID=9000
+ARG CONTAINER_GID=9000
+RUN set -x && \
+  useradd -m ${CONTAINER_USER} && \
+  echo "${CONTAINER_USER}:${CONTAINER_USER}" | chpasswd && \
+  usermod --shell /bin/bash ${CONTAINER_USER} && \
+  usermod -aG sudo ${CONTAINER_USER} && \
+  mkdir -p /etc/sudoers.d && \
+  echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/${CONTAINER_USER} && \
+  chmod 0440 /etc/sudoers.d/${CONTAINER_USER} && \
+  usermod -u ${CONTAINER_UID} ${CONTAINER_USER} && \
+  groupmod -g ${CONTAINER_GID} ${CONTAINER_USER} && \
+  touch ${CONTAINER_HOME}/.sudo_as_admin_successful
+
 # install minumum packages
 RUN set -x && \
   apt-get update -yq && \
@@ -57,27 +74,10 @@ RUN set -x && \
 RUN set -x && \
   apt-get update -yq && \
   rosdep init && \
-  rosdep update --include-eol-distros && \
+  sudo --user=${CONTAINER_USER} rosdep update --include-eol-distros && \
   apt-get autoremove -yq && \
   apt-get clean -yq && \
   rm -rf /var/lib/apt/lists/*
-
-# add new sudo user
-ENV CONTAINER_USER user
-ENV CONTAINER_HOME /home/${CONTAINER_USER}
-ARG CONTAINER_UID=9000
-ARG CONTAINER_GID=9000
-RUN set -x && \
-  useradd -m ${CONTAINER_USER} && \
-  echo "${CONTAINER_USER}:${CONTAINER_USER}" | chpasswd && \
-  usermod --shell /bin/bash ${CONTAINER_USER} && \
-  usermod -aG sudo ${CONTAINER_USER} && \
-  mkdir -p /etc/sudoers.d && \
-  echo "${CONTAINER_USER} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/${CONTAINER_USER} && \
-  chmod 0440 /etc/sudoers.d/${CONTAINER_USER} && \
-  usermod -u ${CONTAINER_UID} ${CONTAINER_USER} && \
-  groupmod -g ${CONTAINER_GID} ${CONTAINER_USER} && \
-  touch ${CONTAINER_HOME}/.sudo_as_admin_successful
 
 # apply entrypoint
 COPY entrypoint.sh /usr/bin/entrypoint.sh
