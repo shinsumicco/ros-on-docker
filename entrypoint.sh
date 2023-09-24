@@ -1,0 +1,22 @@
+#!/bin/bash
+
+ROS_DISTRO=galactic
+
+CONTAINER_USER=user
+CONTAINER_HOME=/home/${CONTAINER_USER}
+
+CONTAINER_UID=${HOST_UID:-9000}
+CONTAINER_GID=${HOST_GID:-9000}
+
+usermod -u ${CONTAINER_UID} -o -m -d ${CONTAINER_HOME} ${CONTAINER_USER}
+groupmod -g ${CONTAINER_GID} ${CONTAINER_USER}
+
+cd ${CONTAINER_HOME}
+if [ -v ${CONTAINER_PROJECT_DPATH} ]
+then
+  chown ${CONTAINER_USER}:${CONTAINER_USER} ${CONTAINER_PROJECT_DPATH}
+fi
+source /opt/ros/${ROS_DISTRO}/setup.bash
+
+echo 'PS1="$ "' >> ${CONTAINER_HOME}/.bashrc
+exec /usr/sbin/gosu ${CONTAINER_USER} "${@}"

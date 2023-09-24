@@ -1,0 +1,30 @@
+{
+    "name": "ros-galactic-desktop",
+    "dockerFile": "../Dockerfile",
+    "context": "..",
+    "containerUser": "user",
+    "updateRemoteUserUID": true,
+    "workspaceFolder": "/home/user/ros-on-docker",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/user/ros-on-docker,type=bind",
+    "privileged": true,
+    "runArgs": [
+        "--ipc", "host",
+        "--net", "host",
+        "--runtime", "nvidia"
+    ],
+    "mounts": [
+        "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind"
+    ],
+    "containerEnv": {
+        "NVIDIA_VISIBLE_DEVICES": "all",
+        "NVIDIA_DRIVER_CAPABILITIES": "all",
+        "DISPLAY": "${localEnv:DISPLAY}"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools"
+            ]
+        }
+    }
+}
