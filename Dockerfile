@@ -64,6 +64,8 @@ RUN set -x && \
   apt-get upgrade -yq --no-install-recommends && \
   apt-get install -yq --no-install-recommends \
     ros-${ROS_DISTRO}-desktop \
+    ros-${ROS_DISTRO}-image-transport \
+    ros-${ROS_DISTRO}-image-transport-plugins \
     python3-colcon-common-extensions \
     python3-rosdep && \
   apt-get autoremove -yq && \
